@@ -17,29 +17,26 @@ class LimitedStore:
         self._store.insert(0,item)
         self._store = self._store[:self._size]
 
-    
     def get(self):
         return self._store
     
 
 class Agent:
     def __init__(self, position: base.Vector, velocity: base.Vector):
+        assert isinstance(position,base.Vector)
+        assert isinstance(velocity,base.Vector)
         self.position = position
         self.velocity = velocity
 
     def move(self):
         self.position.coordinates += self.velocity.coordinates
-        # self.position.x += self.velocity.x
-        # self.position.y += self.velocity.y
 
     def check_bounds(self, max_x: int, max_y: int):
         # Reflect off the boundaries by reversing velocity if out of bounds
         if self.position.x > max_x or self.position.x < 0:
-            x = self.velocity.x
-            self.velocity.x = -1 * x
+            self.velocity.x *= -1
         if self.position.y > max_y or self.position.y < 0:
-            y = self.velocity.y
-            self.velocity.y = -1 * y
+            self.velocity.y *= -1
 
 
     def sense(self,agents:list[Self]) -> Self:
@@ -48,7 +45,12 @@ class Agent:
         min_dst = np.inf
 
         for agent in self._get_non_self_agents(agents):
+            assert isinstance(agent,Agent)
+            assert isinstance(agent.position,base.Vector)
+            assert isinstance(self.position,base.Vector)
+
             dp = agent.position - self.position
+            assert isinstance(dp,base.Vector), f"Should type Vector. Instead is {type(dp)}f"
             if abs(dp.x) > 100 or abs(dp.y) > 100:
                 continue
             cos_theta = measure_cos_theta(self.velocity,dp)
@@ -65,8 +67,8 @@ class Agent:
     def turn(self,target_position,alpha):
 
         vector_to_target = target_position.coordinates - self.position.coordinates
-        new_coordinates = ((1-alpha) * self.velocity.coordinates) + alpha * vector_to_target
-        new_magnitude = np.sqrt(np.linalg.norm(new_coordinates))
+        new_coordinates = ((1-alpha) * self.velocity.coordinates) + (alpha * vector_to_target)
+        new_magnitude = np.linalg.norm(new_coordinates)
         self.velocity.coordinates = new_coordinates * (ORIGINAL_MAGNITUDE / new_magnitude)
 
 
@@ -101,7 +103,7 @@ class AgentFactory(abc.ABC):
 
 class RandomVelocityAgentFactory(AgentFactory):
 
-    def build(self,position) -> Agent:
+    def build(self,position:np.ndarray) -> Agent:
 
         position = base.Vector(position)
         angle = random.uniform(0,3.14)
@@ -119,7 +121,7 @@ class FixedVelocityAgentFactory(AgentFactory):
 
     def build(self,position:base.Vector) -> Agent:
 
-        position = base.Vector(position.coordinates)
+        position = base.Vector(position)
         result = Agent(position,self._velocity)
         return result
     

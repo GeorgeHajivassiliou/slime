@@ -49,7 +49,7 @@ class SlimeMoldSimulation:
                 target_agent = agent.sense(nearby_agents)
 
                 if target_agent is not None:
-                    agent.turn(target_agent.position,60)
+                    agent.turn(target_agent.position,10)
 
             self._agent_positions[i].add(tuple(agent.position))
 

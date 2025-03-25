@@ -39,8 +39,9 @@ class TestAgent:
     @pytest.fixture
     def agents(self):
         centres = [(0,0),(2,2),(1,1)]
+        velocity = base.Vector(np.array([0,2]))
         centres = [base.Vector(np.array(c)) for c in centres]
-        factory = objects.FixedVelocityAgentFactory(base.Vector(np.array([0,1])))
+        factory = objects.FixedVelocityAgentFactory(velocity)
         result = list(objects.make_n_agents(len(centres),centres,factory))
         return result
 
@@ -50,6 +51,13 @@ class TestAgent:
         observed = agents[0].sense(agents)
         assert observed == expected
 
+    def test_turn(self,agents):
+        acting_agent =  agents[0]
+        acting_agent.turn(agents[1].position,0)
+        observed = acting_agent.velocity
+
+        assert tuple(observed) == (0,2)
+
 
 def test_measure_angle():
     v1 = base.Vector(np.array([3,4])) # using pythagorean numbers so that result is integer
@@ -58,9 +66,4 @@ def test_measure_angle():
     observed = objects.measure_cos_theta(v1,v2)
     assert observed == expected
 
-    # def test_turn(self,agents):
-    #     acting_agent =  agents[0]
-    #     acting_agent.turn(agents[1].position,0.5)
-    #     observed = acting_agent.velocity
 
-    #     assert tuple(observed) == (1,1.5)
